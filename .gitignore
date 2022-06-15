@@ -1,0 +1,5 @@
+/.env
+/.vscode
+/datarobot_gui_to_code.code-workspace
+/gui_to_code.ipynb
+/venv

@@ -1,0 +1,13 @@
+# environment variables defined inside a .env file
+# URL, Username and Password for DataRobot
+DATAROBOT_URL = "https://app2.datarobot.com/"
+USERNAME = "callum@datarobot.com"
+PASSWORD = "your_password_here"
+# The file to upload and generate predictions on
+DATASET_FILE_PATH = '/Users/callum.finlayson/Downloads/10k_diabetes_test.csv'
+# The column to include in the results file
+OPTIONAL_FEATURES_COLUMN = "id_or_column_you_want_included"
+# The project name to be used (note the first, top scoring model will be used)
+PROJECT_NAME = "10k_diabetes.csv"
+# CLEANUP_FLAG takes True or False as an argument and if set to True will delete the file upload it creates after downloading.
+CLEANUP_FLAG = True
