@@ -1,6 +1,7 @@
 # Author: Callum Finlayson (callum@datarobot.com)
 # Date: 15 June 2022
 # Desc:  "GUI PI" - Workaround for the API not having a suitable variable to cater for "optional features"
+# Last Updated Date: 21 June 2022
 
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
@@ -31,6 +32,8 @@ def main():
     OPTIONAL_FEATURES_COLUMN =os.getenv('OPTIONAL_FEATURES_COLUMN')
     PROJECT_NAME=os.getenv('PROJECT_NAME')
     CLEANUP_FLAG = os.getenv('CLEANUP_FLAG')
+    USE_AICAT_FLAG = os.getenv('USE_AICAT_FLAG')
+    AICAT_ITEM_NAME = os.getenv('AICAT_ITEM_NAME')
     
     # Get the directory and file name from the full path provided
     download_dir = os.path.dirname(os.path.abspath(DATASET_FILE_PATH))
@@ -100,28 +103,40 @@ def main():
     #Expand the top model (the logic could be enhanced here to loop through all models and have the script search for a specific name)
     delay = 3 # seconds
     try:
-        element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/leaderboard-item/div/div[1]/div[1]/div[2]/span[1]")))
+        #element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/leaderboard-item/div/div[1]/div[1]/div[2]/span[1]")))
+        element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div/div/div[1]/div[2]")))
         driver.execute_script("arguments[0].click();", element)
     except TimeoutException as e:
         print (e)    
     
-    time.sleep(2)
-    # Click on the 'Predict' tab
-    element = driver.find_element(by=By.XPATH, value = "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/leaderboard-item/div/div[2]/div[1]/button[4]")
+    try:
+        element.click()
+    except:
+        print("couldn't expand top mode")
+    
+    time.sleep(5) # This is a bit long, but important for latency issues (might need to increase on slow connections)
+    # Click on the 'Predict' tab    
+    #element = driver.find_element(by=By.XPATH, value = "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/leaderboard-item/div/div[2]/div[1]/button[4]")
+    element = driver.find_element(by=By.XPATH, value = "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div[1]/div[2]/div[1]/button[4]")
     driver.execute_script("arguments[0].click();", element)
 
     time.sleep(2)
     # Sometimes there is an existing item in the "optionall features" text box, the below command will remove it if it exists
     try:
-        element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/div/div/ui-view/react-ui-view-adapter/div/div[2]/div/div[1]/div[2]/div/div/div/span/button")))
+        #element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH,"/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/div/div/ui-view/react-ui-view-adapter/div/div[2]/div/div[1]/div[2]/div/div/div/span/button")))
+        element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div[2]/div/ui-view/ui-view/react-ui-view-adapter/div/div[2]/div/div[1]/div[2]/div/div/div/span/button")))
         element.click()
         time.sleep(2) # This is important to wait for the item to be removed
     except:
         # no problem if this doesn't exist, most times it won'!
         pass
     
-    #Enter the "Optional Features" (want to add the OPTIONAL_FEATURES_COLUMN)                                                                    
-    optional_features_box = driver.find_element(by=By.XPATH, value ="/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/div/div/ui-view/react-ui-view-adapter/div/div/div/div[1]/div[2]/div/div/div/div/div/input")
+    #Enter the "Optional Features" (want to add the OPTIONAL_FEATURES_COLUMN)                                             
+    #optional_features_box = driver.find_element(by=By.XPATH, value ="/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/div/div/ui-view/react-ui-view-adapter/div/div/div/div[1]/div[2]/div/div/div/div/div/input")
+    #optional_features_box = driver.find_element(by=By.XPATH, value ="/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div[2]/div/ui-view/ui-view/react-ui-view-adapter/div/div[2]/div/div[1]/div[2]/div/div/div/div/div/input")
+                                                                     
+    #optional_features_box = driver.find_element(by=By.XPATH, value ="/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div[2]/div/ui-view/ui-view/react-ui-view-adapter/div/div[2]/div/div[1]/div[2]/div/div/div/span/span[2]")
+    optional_features_box = driver.find_element(by=By.XPATH, value ="/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div[2]/div/ui-view/ui-view/react-ui-view-adapter/div/div[2]/div/div[1]/div[2]/div/div/div/div/div/input")
     time.sleep(2)
 
     # Send the optional feature (or comma separated list of features if you want more than one)
@@ -133,18 +148,56 @@ def main():
     time.sleep(1)
 
     # "Choose File" drop down
-    driver.find_element(by=By.XPATH, value ="/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/div/div/ui-view/react-ui-view-adapter/div/div[2]/div/div[2]/div/div[1]/div/button").click()
-    
-    # Local File option only for now (clicking this will cause a file selector popup)
-    driver.find_element(by=By.XPATH, value ="//*[@id=\"dropdown-item-LOCAL\"]/label").click()
-    time.sleep(2)
+    #driver.find_element(by=By.XPATH, value ="//*[@id=\"lid-62a1d0ec3724060f13f90f78\"]/div/div/div/ui-view/react-ui-view-adapter/div/div[2]/div/div[2]/div/div[1]/div/button").click()
+    driver.find_element(by=By.XPATH, value ="/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div[2]/div/ui-view/ui-view/react-ui-view-adapter/div/div[2]/div/div[2]/div/div[1]/div/button").click()
+    time.sleep(1)
+    if USE_AICAT_FLAG:
 
-    # Select the file for the file selector pop up
-    driver.find_element(by=By.XPATH, value ="//*[@id=\"LOCAL\"]").send_keys(DATASET_FILE_PATH)
+        # OPTION1: AI Catalog option popup
+        driver.find_element(by=By.XPATH, value ="//*[@id=\"dropdown-item-AI_CATALOG\"]/button").click()
+        time.sleep(1)
+        i=1
+        try:
+            #Loop through the AI catalog items (if it's not in the first page it will fail)
+            while (driver.find_element(by=By.XPATH, value ="/html/body/div[19]/div/div/div/div/div/div[2]/div[3]/div["+str(i)+"]")):
+                time.sleep(1)
+                ai_cat_item = driver.find_element(by=By.XPATH, value ="/html/body/div[19]/div/div/div/div/div/div[2]/div[3]/div["+str(i)+"]/div/div/header/div/span[1]")
+                print(ai_cat_item.text)
+                if ai_cat_item.text == AICAT_ITEM_NAME:
+                    #Click on the correct item in the popup
+                    try:
+                        time.sleep(2)
+                        #ai_cat_button = driver.find_elements(by=By.XPATH, value ="/html/body/div[19]/div/div/div/div/div/div[2]/div[3]/div["+str(i)+"]/div/div")
+                        ai_cat_button = driver.find_element(by=By.XPATH, value ="/html/body/div[19]/div/div/div/div/div/div[2]/div[3]/div["+str(i)+"]/div")
+                        ai_cat_button.click()
+                    except:
+                        if i == 1:
+                            ai_cat_button = driver.find_element(by=By.XPATH, value ="/html/body/div[19]/div/div/div/div/div/div[2]/div[3]/div")
+                        else:
+                            ai_cat_button = driver.find_element(by=By.XPATH, value ="/html/body/div[19]/div/div/div/div/div/div[2]/div[3]/div["+str(i)+"]")
+                        print ("did't click anything on the AU Catalog popup")
+                    time.sleep(2)
+                    #Click the button "use this dataset"
+                    use_this_dataset_button = driver.find_element(by=By.XPATH, value ="/html/body/div[19]/div/div/div/div/aside/div[1]/span/button")
+                    use_this_dataset_button.click()
+                i+=1
+                time.sleep(1)
+        except NoSuchElementException:
+            print ("no more ai catalog items, went through " + str(i) +" iterations")
+
+    else:
+
+        # Local File option only for now (clicking this will cause a file selector popup)
+        driver.find_element(by=By.XPATH, value ="//*[@id=\"dropdown-item-LOCAL\"]/label").click()
+        time.sleep(2)
+
+        # Select the file for the file selector pop up
+        driver.find_element(by=By.XPATH, value ="//*[@id=\"LOCAL\"]").send_keys(DATASET_FILE_PATH)
+
     time.sleep(2)
+    delay = 100     # This delay is set to a high number to cater for large files taking a while to upload
     # Click "Compute Predictions"
-    delay = 200     # This delay is set to a high number to cater for large files taking a while to upload
-    # I ended up using nth-of-type(2) where a value of 1 would be the training set, but it seems to time out sometimes, so setting the XPATH method as a backup plan
+    # I ended up using nth-of-type(2) where a value of 1 wou    ld be the training set, but it seems to time out sometimes, so setting the XPATH method as a backup plan (ie in the excaption block)
     try:
         element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".button[test-id=compute-predictions-button]:nth-of-type(2)")))    
     except:
@@ -161,15 +214,18 @@ def main():
     delay = 200 # Again have set this to a relatively high number in case it takes a long time to compute the predictions
     # Wait until "Download Predictions" is displayed (and ready to be clicked).. Making the assumption of no duplicate projects
     try:
-        # Can't use CSS_SELECTOR here because there are possibly other "Download Prediction" elements on page.
+        # Can't use CSS_SELECTOR here because there are possibly other "Download Prediction" elements on page. Although XPATH appears to change... This is possibly a problem
         #element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".button[test-id=download-predictions-button]:first-child")))
-        element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/div/div/ui-view/react-ui-view-adapter/div/div[2]/div/div[3]/div[1]/aside[2]/div/button[2]/span')))
+        #element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/div/div/ui-view/react-ui-view-adapter/div/div[2]/div/div[3]/div[1]/aside[2]/div/button[2]/span')))                                                                                            
+        #element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div[2]/div/ui-view/ui-view/react-ui-view-adapter/div/div[2]/div/div[2]/div/div[1]/div/button')))
+        element = WebDriverWait(driver, delay).until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div[2]/div/ui-view/ui-view/react-ui-view-adapter/div/div[2]/div/div[3]/div[1]/aside[2]/div/button[2]')))
         time.sleep(2)
         element.click()
         print("Predicitons Exported to - " + str(DATASET_FILE_PATH))
         if CLEANUP_FLAG:       
             # Selecting the delete button for the top "Prediction Dataset"
-            delete_button = driver.find_element(By.XPATH, "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/div/div/ui-view/react-ui-view-adapter/div/div[2]/div/div[3]/div[1]/aside[2]/div/button[3]")
+            #delete_button = driver.find_element(By.XPATH, "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/div[1]/div/div/div/ui-view/react-ui-view-adapter/div/div[2]/div/div[3]/div[1]/aside[2]/div/button[3]")
+            delete_button = driver.find_element(By.XPATH, "/html/body/div[1]/main/section/section/section/react-ui-view-adapter/div[2]/ui-view/react-ui-view-adapter/div/div/div[2]/ui-view/leaderboard/div/div/div/leaderboard-rows/div/div[1]/div/div[2]/div/ui-view/ui-view/react-ui-view-adapter/div/div[2]/div/div[3]/div[1]/aside[2]/div/button[3]")
             time.sleep(20) # Give time to download, then cleanup
             delete_button.click()
             time.sleep(2)
